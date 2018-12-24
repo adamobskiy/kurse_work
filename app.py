@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from flask import Flask, render_template, request, session, redirect, url_for, make_response
 
-from forms import LoginForm, RegistrationForm
+from forms import LoginForm, RegistrationForm, UpdateUserForm
 from db import UserPackage
 
 app = Flask(__name__)
@@ -12,9 +12,10 @@ app.secret_key = 'My_key'
 @app.route('/')
 def index():
     user_login = session.get('login') or request.cookies.get('login')
+    user = UserPackage()
     print('Session: {}| Cookie: {}'.format(session.get('login'), request.cookies.get('login')))
     if user_login:
-        return 'you are login as {} <a href=\'/logout\'>Logout</a>'.format(user_login)
+        return render_template('index.html', user_login=user_login, doctor=user.its_doctor(user_login))
     return redirect(url_for('login'))
 
 
@@ -60,20 +61,12 @@ def registration():
     form = RegistrationForm()
 
     if request.method == 'POST':
-        print('Helooo')
         if not form.validate():
             return render_template('registration.html', form=form)
         else:
             user = UserPackage()
-            print(request.form['login'],
-                  request.form['first_name'],
-                  request.form['last_name'],
-                  datetime.strptime(request.form['birth_day'] + ' 00:00:00', '%Y-%m-%d %H:%M:%S'),
-                  request.form['sex'],
-                  request.form['password'],
-                  request.form['doctor'])
             if request.form['password'] == request.form['password_repeat']:
-                res = user.add_user(
+                user_login, status = user.add_user(
                     request.form['login'],
                     request.form['first_name'],
                     request.form['last_name'],
@@ -82,29 +75,52 @@ def registration():
                     request.form['password'],
                     request.form['doctor']
                 )
-                print(res)
-                if res:
+                if status == 'ok':
+                    session['login'] = user_login
                     return redirect('/')
                 else:
-                    print(res)
+                    problem = 'Користувач з таким іменем уже існує'
+                    problem = problem if status == problem else 'Поля можуть містити лиш букви, числа та симовол "_"'
+                    return render_template('registration.html', form=form, problem=problem)
             else:
-                return render_template('registration.html', form=form)
+                return render_template('registration.html', form=form, problem='Повторний пароль невірний')
     return render_template('registration.html', form=form)
 
 
-@app.route('/subscription')
-def subscription():
-    return 'Subscription'
-
-
-@app.route('/my_page')
+@app.route('/my_page', methods=['GET', 'POST'])
 def my_page():
-    return 'My Page'
+    user_login = session.get('login') or request.cookies.get('login')
+    user = UserPackage()
+    table = user.get_user_info(user_login)
+    form = UpdateUserForm()
+    if request.method == 'POST':
+        if not form.validate():
+            return render_template('my_page.html', table=table, form=form, doctor=user.its_doctor(user_login))
+        status = user.update_user_info(
+            user_login,
+            request.form['first_name'],
+            request.form['last_name'],
+            datetime.strptime(request.form['birth_day'] + ' 00:00:00', '%Y-%m-%d %H:%M:%S'),
+            request.form['sex'],
+            request.form['doctor']
+        )
+        if status == 'ok':
+            table = user.get_user_info(user_login)
+        else:
+            return render_template('my_page.html', table=table, form=form,
+                                   problem='Поля можуть містити лиш букви, числа та симовол "_"',
+                                   doctor=user.its_doctor(user_login))
+    return render_template('my_page.html', table=table, form=form, doctor=user.its_doctor(user_login))
 
 
 @app.route('/my_symptoms')
 def my_symptoms():
     return 'My symptoms'
+
+
+@app.route('/subscription')
+def subscription():
+    return 'Subscription'
 
 
 @app.route('/medication_advice')
