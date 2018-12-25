@@ -9,12 +9,12 @@ CREATE OR REPLACE PACKAGE desease_package IS
                         disdesc IN desease.dis_desc%TYPE);
 
 
-
   PROCEDURE del_desease(
     disname IN desease.dis_name%TYPE
   );
 
-  PROCEDURE update_desease(disname IN desease.dis_name%TYPE,
+  PROCEDURE update_desease(status out varchar2,
+                           disname IN desease.dis_name%TYPE,
                            disdesc IN desease.dis_desc%TYPE);
 
   FUNCTION get_desease(
@@ -28,15 +28,12 @@ END desease_package;
 CREATE OR REPLACE PACKAGE BODY desease_package IS
 
 
-
-    PROCEDURE add_desease (
-        status out varchar2,
-        disname IN desease.dis_name%TYPE,
-        disdesc IN desease.dis_desc%TYPE
-    ) IS
-        PRAGMA autonomous_transaction;
-    BEGIN
-INSERT INTO desease (dis_name,
+  PROCEDURE add_desease(status out varchar2,
+                        disname IN desease.dis_name%TYPE,
+                        disdesc IN desease.dis_desc%TYPE) IS
+    PRAGMA autonomous_transaction;
+  BEGIN
+    INSERT INTO desease (dis_name,
                          dis_desc)
     VALUES (disname,
             disdesc);
@@ -50,8 +47,7 @@ INSERT INTO desease (dis_name,
     WHEN OTHERS
     THEN
       status := SQLERRM;
-    END add_desease;
-
+  END add_desease;
 
 
   PROCEDURE
@@ -80,21 +76,9 @@ INSERT INTO desease (dis_name,
       RAISE value_error;
   END del_desease;
 
-  PROCEDURE
-    update_desease(disname
-                     IN
-                     desease
-                       .
-                       dis_name
-                       %
-                       TYPE,
-                   disdesc
-                     IN
-                     desease
-                       .
-                       dis_desc
-                       %
-                       TYPE)
+  PROCEDURE update_desease(status out varchar2,
+                           disname IN desease.dis_name%TYPE,
+                           disdesc IN desease.dis_desc%TYPE)
   IS
     PRAGMA
       autonomous_transaction;
@@ -104,11 +88,11 @@ INSERT INTO desease (dis_name,
     WHERE desease.dis_name = disname;
 
     COMMIT;
+    status := 'ok';
     EXCEPTION
     WHEN OTHERS
     THEN
-      ROLLBACK;
-      RAISE value_error;
+      status := SQLERRM;
   END update_desease;
 
   FUNCTION

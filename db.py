@@ -98,8 +98,10 @@ class SymptomPackage:
         self.__cursor.callproc('symptom_package.add_symptom', [status, sym_name, sym_desc])
         return status.getvalue()
 
-    def update_symptom(self, sym_name, sym_desc):
-        self.__cursor.callproc('symptom_package.update_symptom', [sym_name, sym_desc])
+    def update(self, sym_name, sym_desc):
+        status = self.__cursor.var(cx_Oracle.STRING)
+        self.__cursor.callproc('symptom_package.update_symptom', [status, sym_name, sym_desc])
+        return status.getvalue()
 
     def del_symptom(self, sym_name):
         self.__cursor.callproc('symptom_package.del_symptom', [sym_name])
@@ -113,6 +115,12 @@ class SymptomPackage:
         sql =  "SELECT * FROM TABLE(symptom_package.get_symptoms({}))".format(limit)
         res = pd.read_sql_query(sql, self.__db)
         return res
+
+    def get_all_names(self):
+        sql = "SELECT SYM_NAME FROM SYMPTOM"
+        res = pd.read_sql_query(sql, self.__db)
+        return res
+
 
 
 class MdsPackage:
@@ -169,8 +177,10 @@ class DiseasePackage:
         self.__cursor.callproc('DESEASE_PACKAGE.add_desease', [status, dis_name, dis_desc])
         return status.getvalue()
 
-    def update_disease(self, dis_name, dis_desc):
-        self.__cursor.callproc('desease_package.update_desease', [dis_name, dis_desc])
+    def update(self, dis_name, dis_desc):
+        status = self.__cursor.var(cx_Oracle.STRING)
+        self.__cursor.callproc('desease_package.update_desease', [status, dis_name, dis_desc])
+        return status.getvalue()
 
     def del_disease(self, dis_name):
         self.__cursor.callproc('desease_package.del_desease', [dis_name])
@@ -180,6 +190,10 @@ class DiseasePackage:
         res = pd.read_sql_query(sql, self.__db)
         return res
 
+    def get_all_names(self):
+        sql = "SELECT DIS_NAME FROM DESEASE"
+        res = pd.read_sql_query(sql, self.__db)
+        return res
 
 class MedicinePackage:
 
@@ -192,8 +206,10 @@ class MedicinePackage:
         self.__cursor.callproc('medicine_package.add_medicine', [status, med_name, med_desc])
         return status.getvalue()
 
-    def update_medicine(self, med_name, med_desc):
-        self.__cursor.callproc('medicine_package.update_medicine', [med_name, med_desc])
+    def update(self, med_name, med_desc):
+        status = self.__cursor.var(cx_Oracle.STRING)
+        self.__cursor.callproc('medicine_package.update_medicine', [status, med_name, med_desc])
+        return status.getvalue()
 
     def del_medicine(self, med_name):
         self.__cursor.callproc('medicine_package.del_medicine', [med_name])
@@ -202,6 +218,12 @@ class MedicinePackage:
         sql = "SELECT * FROM TABLE(medicine_package.get_medicine('{}'))".format(med_name)
         res = pd.read_sql_query(sql, self.__db)
         return res
+
+    def get_all_names(self):
+        sql = "SELECT MED_NAME FROM MEDICINE"
+        res = pd.read_sql_query(sql, self.__db)
+        return res
+
 
 class CardPackage:
 

@@ -25,6 +25,7 @@ CREATE OR REPLACE PACKAGE symptom_package IS
 
 
     PROCEDURE update_symptom (
+        status out varchar2,
         symname   IN        symptom.sym_name%TYPE,
         symdesc   IN        symptom.sym_desc%TYPE
     );
@@ -90,6 +91,7 @@ CREATE OR REPLACE PACKAGE BODY symptom_package IS
     END del_symptom;
 
     PROCEDURE update_symptom (
+        status out varchar2,
         symname   IN        symptom.sym_name%TYPE,
         symdesc   IN        symptom.sym_desc%TYPE
     ) IS
@@ -102,10 +104,11 @@ CREATE OR REPLACE PACKAGE BODY symptom_package IS
             symptom.sym_name = symname;
 
         COMMIT;
+    status := 'ok';
     EXCEPTION
-        WHEN OTHERS THEN
-            ROLLBACK;
-            RAISE value_error;
+    WHEN OTHERS
+    THEN
+      status := SQLERRM;
     END update_symptom;
 
     FUNCTION get_symptom (

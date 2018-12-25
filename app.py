@@ -9,7 +9,7 @@ from forms.user import LoginForm, RegistrationForm, UpdateUserForm
 from forms.symptom import SelectSymptomForm
 from forms.card import SelectCardForm
 from forms.disease import SelectDiseaseForm
-from forms.action import AddForm
+from forms.action import AddForm, UpdateForm
 from db import UserPackage, SymptomPackage, MdsPackage, CardPackage, DiseasePackage, MedicinePackage
 
 
@@ -249,9 +249,32 @@ def add(table_name):
                            problem=problem)
 
 
-@app.route('/table/update/<table_name>')
+@app.route('/table/update/<table_name>', methods=['GET', 'POST'])
 def update(table_name):
-    return table_name.capitalize()
+    user_login = session.get('login') or request.cookies.get('login')
+    user = UserPackage()
+    package = package_map[table_name]
+    names = package.get_all_names().iloc[:, 0].values
+    form = UpdateForm().get_form(names)
+    problem = None
+    if request.method == 'POST':
+        if not form.validate():
+            pass
+        else:
+            print(request.form['name'], request.form['desc'])
+            status = package.update(request.form['name'], request.form['desc'])
+            print(status)
+            if status == 'ok':
+                return redirect(url_for('table_action', table_name=table_name))
+            else:
+                problem = 'Поля можуть містити лиш букви, числа та симовол "_"'
+    return render_template('update_table.html',
+                           user_login=user_login,
+                           user=user,
+                           table_name=table_name,
+                           table_nameuk=table_map[table_name],
+                           form=form,
+                           problem=problem)
 
 
 @app.route('/table/delete/<table_name>')

@@ -4,6 +4,7 @@ from wtforms import (StringField,
                      RadioField,
                      SubmitField,
                      BooleanField,
+                     SelectField,
                      validators)
 
 
@@ -17,5 +18,16 @@ class AddForm(FlaskForm):
 
 
 class UpdateForm(FlaskForm):
-    pass
+    def get_form(self, names):
+        class DynamicForm(FlaskForm):
+            name = SelectField('Карта: ', choices=[(name_field, name_field) for name_field in names])
+        setattr(DynamicForm, 'desc', StringField('Опис:', validators=[validators.DataRequired('Введіть опис')]))
+        setattr(DynamicForm, 'submit', SubmitField('Оновити'))
+        return DynamicForm()
 
+class DeleteForm(FlaskForm):
+    def get_form(self, names):
+        class DynamicForm(FlaskForm):
+            name = SelectField('Карта: ', choices=[(name_field, name_field) for name_field in names])
+        setattr(DynamicForm, 'submit', SubmitField('Видалити'))
+        return DynamicForm()
