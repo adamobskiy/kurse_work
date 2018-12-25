@@ -29,13 +29,13 @@
                 <a class="nav-link" href="/medication_advice/my_symptoms">Отримати список ліків</a>
             </li>
             {% if user.its_submited(user_login) == '1' %}
-            <li class="nav-item">
-                <a class="nav-link" href="/possible_illnesses/my_symptoms">Спрогнозувати хворобу</a>
-            </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/possible_illnesses/my_symptoms">Спрогнозувати хворобу</a>
+                </li>
             {% else %}
-            <li class="nav-item">
-                <a class="nav-link" href="/subscription">Спрогнозувати хворобу</a>
-            </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/subscription">Спрогнозувати хворобу</a>
+                </li>
             {% endif %}
             {% if user.its_doctor(user_login) == '1' %}
                 <li class="nav-item">
@@ -48,7 +48,7 @@
                     <a class="nav-link" href="/table/desease">Хвороби</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Статистика</a>
+                    <a class="nav-link" href="/statistics">Статистика</a>
                 </li>
             {% endif %}
         </ul>
@@ -62,8 +62,9 @@
         {% block content %}{% endblock %}
     </div>
 </main>
+</body>
 
-
+<footer>
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
         crossorigin="anonymous"></script>
@@ -74,5 +75,21 @@
         integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
         crossorigin="anonymous"></script>
 
-</body>
+
+<script src="https://d3js.org/d3.v5.min.js"></script>
+
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<!-- Plotly.js -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<script type="text/javascript">
+ var graphs = {{graphJSON | safe}};
+        var ids = {{ids | safe}};
+        for (let i = 0; i < ids.length; i++) {
+            Plotly.plot(ids[i].toString(), [graphs[i]], {});
+        }
+</script>
+
+</footer>
+
 </html>

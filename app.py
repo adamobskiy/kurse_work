@@ -1,7 +1,11 @@
 from datetime import datetime, timedelta
+import json
 
 import numpy as np
 import pandas as pd
+import plotly
+import plotly.plotly as py
+import plotly.graph_objs as go
 from flask import Flask, render_template, request, session, redirect, url_for, make_response
 import cx_Oracle
 
@@ -303,6 +307,41 @@ def delete(table_name):
                            table_nameuk=table_map[table_name],
                            form=form,
                            problem=problem)
+
+
+@app.route('/statistics', methods=['GET', 'POST'])
+def statistics():
+    user_login = session.get('login') or request.cookies.get('login')
+    user = UserPackage()
+
+    connect = cx_Oracle.connect(user_name, password, server)
+    sql = "SELECT * from {}".format('DESEASE')
+    disease = pd.read_sql_query(sql, connect)
+
+    sql = "SELECT * from {}".format('MEDICINE')
+    medicine = pd.read_sql_query(sql, connect)
+
+    sql = "SELECT * from {}".format('SYMPTOM')
+    symptom = pd.read_sql_query(sql, connect)
+
+    hist_1 = go.Histogram(
+        x=disease.DIS_NAME.apply(len)
+    )
+    hist_2 = go.Histogram(
+        x=medicine.MED_NAME.apply(len)
+    )
+    hist_3 = go.Histogram(
+        x=symptom.SYM_NAME.apply(len)
+    )
+
+    data = [hist_1, hist_2, hist_3]
+    ids = [1, 2, 3]
+
+
+    graphJSON = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
+
+
+    return render_template('statistics.html', user_login=user_login, user=user, graphJSON=graphJSON, ids=ids)
 
 
 if __name__ == '__main__':
