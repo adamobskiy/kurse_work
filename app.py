@@ -6,12 +6,14 @@ from flask import Flask, render_template, request, session, redirect, url_for, m
 
 from forms.user import LoginForm, RegistrationForm, UpdateUserForm
 from forms.symptom import SelectSymptomForm
-from db import UserPackage, SymptomPackage, MdsPackage
+from forms.card import SelectCardForm
+from forms.disease import SelectDiseaseForm
+from db import UserPackage, SymptomPackage, MdsPackage, CardPackage
 
 
 app = Flask(__name__)
 app.secret_key = 'My_key'
-app.jinja_env.globals.update(zip=zip, type=type, list=list)
+app.jinja_env.globals.update(zip=zip, type=type, list=list, str=str)
 
 @app.route('/')
 def index():
@@ -19,7 +21,7 @@ def index():
     user = UserPackage()
     print('Session: {}| Cookie: {}'.format(session.get('login'), request.cookies.get('login')))
     if user_login:
-        return render_template('index.html', user_login=user_login, doctor=user.its_doctor(user_login))
+        return render_template('index.html', user_login=user_login,  user=user)
     return redirect(url_for('login'))
 
 
@@ -99,7 +101,7 @@ def my_page():
     form = UpdateUserForm()
     if request.method == 'POST':
         if not form.validate():
-            return render_template('my_page.html', table=table, form=form, doctor=user.its_doctor(user_login))
+            return render_template('my_page.html', table=table, form=form, user_login=user_login,  user=user)
         status = user.update_user_info(
             user_login,
             request.form['first_name'],
@@ -113,41 +115,76 @@ def my_page():
         else:
             return render_template('my_page.html', table=table, form=form,
                                    problem='Поля можуть містити лиш букви, числа та симовол "_"',
-                                   doctor=user.its_doctor(user_login))
-    return render_template('my_page.html', table=table, form=form, doctor=user.its_doctor(user_login))
+                                   user_login=user_login, user=user)
+    return render_template('my_page.html', table=table, form=form,  user_login=user_login,  user=user)
 
 
 @app.route('/<next_page>/my_symptoms', methods=['GET', 'POST'])
 def my_symptoms(next_page):
+    user_login = session.get('login') or request.cookies.get('login')
+    user = UserPackage()
     symptom = SymptomPackage()
     table = symptom.get_number_symptoms()
     form = SelectSymptomForm().get_dynamic(table.SYMANME)
-    return render_template('my_symptoms.html',  form=form, next_page=next_page)
+    return render_template('my_symptoms.html',  form=form, next_page=next_page, user_login=user_login,  user=user)
 
 
 @app.route('/medication_advice', methods=['GET', 'POST'])
 def medication_advice():
+    user_login = session.get('login') or request.cookies.get('login')
+    user = UserPackage()
     symptoms = list(filter(lambda x: x not in ('csrf_token', 'submit'), request.form))
     mds = MdsPackage()
     medication = []
     symptom_map = []
     for symptom in symptoms:
-        med_fom_sym = list(mds.get_medication_list(symptom).TYPE_MDS_MED_NAME)
-        medication += med_fom_sym
-        symptom_map += [symptom for i in range(len(med_fom_sym))]
+        med_from_sym = list(mds.get_medication_list(symptom).TYPE_MDS_MED_NAME)
+        medication += med_from_sym
+        symptom_map += [symptom for i in range(len(med_from_sym))]
     med_res = pd.DataFrame({'symptom': symptom_map, 'medication': medication})
-    return render_template('medication_advice.html', med_res=med_res)
+    return render_template('medication_advice.html', med_res=med_res,  user_login=user_login,  user=user)
 
 
-@app.route('/subscription')
+@app.route('/subscription', methods=['GET', 'POST'])
 def subscription():
-    return 'Subscription'
+    user_login = session.get('login') or request.cookies.get('login')
+    user = UserPackage()
+    card = CardPackage()
+    card_numbers = list(card.get_all_user_card(user_login).CARDNUMBER)
+    form = SelectCardForm().get_dynamic(card_numbers) if card_numbers else None
+    if request.method == 'POST':
+        status = user.update_user_submit(user_login, '1' if request.form['card'] else '0')
+        if status == 'ok':
+            return redirect('/possible_illnesses/my_symptoms')
+    return render_template('subscription.html', user_login=user_login, user=user, form=form)
 
 
-@app.route('/possible_illnesses')
+@app.route('/possible_illnesses', methods=['GET', 'POST'])
 def possible_illnesses():
-    return 'Possible illnesses'
+    user_login = session.get('login') or request.cookies.get('login')
+    user = UserPackage()
+    symptoms = list(filter(lambda x: x not in ('csrf_token', 'submit'), request.form))
 
+    mds = MdsPackage()
+    disease = []
+    symptom_map = []
+    for symptom in symptoms:
+        dis_from_sym = list(mds.get_disease_list(symptom).TYPE_MDS_DIS_NAME)
+        disease += dis_from_sym
+        symptom_map += [symptom for i in range(len(dis_from_sym))]
+    dis_res = pd.DataFrame({'symptom': symptom_map, 'disease': disease})
+
+    return render_template('possible_illnesses.html', user_login=user_login, user=user, dis_res=dis_res)
+
+
+@app.route('/individual/<dis_name>', methods=['GET', 'POST'])
+def individual(dis_name):
+    user_login = session.get('login') or request.cookies.get('login')
+    user = UserPackage()
+    mds = MdsPackage()
+
+    medication = mds.get_medication_list_by_dis(dis_name).TYPE_MDS_MED_NAME
+    return render_template('individual.html', user_login=user_login, user=user, medication=medication)
 
 @app.route('/select/<table_name>')
 def select(table_name):

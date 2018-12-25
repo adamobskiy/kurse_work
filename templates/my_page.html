@@ -26,13 +26,13 @@
             <div class="form-group">
                 <div class="text-left">
                     {{ form.sex.label }}
-                    {{ form.sex(value=table.SEXUSER[0]) }}
+                    {{ form.sex(value=str(table.SEXUSER[0])) }}
                 </div>
             </div>
             <div class="form-group">
                 <div class="text-left">
                     {{ form.doctor.label }}
-                    {{ form.doctor(value=table.DOCTORUSER[0]) }}
+                    {{ form.doctor(default=table.DOCTORUSER[0]) }}
                 </div>
             </div>
 

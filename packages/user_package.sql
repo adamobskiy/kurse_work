@@ -43,6 +43,11 @@ create or replace PACKAGE user_package IS
                                loginuser IN user_info.login%TYPE,
                                doctoruser IN user_info.sex%TYPE);
 
+  PROCEDURE update_user_submit(status OUT varchar2,
+                               loginuser IN user_info.login%TYPE,
+                               submituser IN user_info.submited%TYPE);
+
+
   PROCEDURE update_user_info(status OUT varchar2,
                              loginuser IN user_info.login%TYPE,
                              firstname IN user_info.first_name%TYPE,
@@ -205,6 +210,25 @@ CREATE OR REPLACE PACKAGE BODY user_package IS
     THEN
       status := SQLERRM;
   END update_user_doctor;
+
+
+  PROCEDURE update_user_submit(status OUT varchar2,
+                               loginuser IN user_info.login%TYPE,
+                               submituser IN user_info.submited%TYPE) IS
+    PRAGMA autonomous_transaction;
+  BEGIN
+    UPDATE user_info
+    SET user_info.SUBMITED = submituser
+    WHERE user_info.login = loginuser;
+
+    COMMIT;
+    status := 'ok';
+    EXCEPTION
+    WHEN OTHERS
+    THEN
+      status := SQLERRM;
+  END update_user_submit;
+
 
   PROCEDURE update_user_info(status OUT varchar2,
                              loginuser IN user_info.login%TYPE,

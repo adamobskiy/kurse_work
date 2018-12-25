@@ -35,6 +35,7 @@ class UserPackage:
     def update_user_doctor(self, status, login, doctor):
         self.__cursor.callproc('user_package.update_user_doctor', [status, login, doctor])
 
+
     def update_user_info_detail(self, login, first_name, last_name, birthday, sex, doctor):
         status_first_name = self.__cursor.var(cx_Oracle.STRING)
         status_last_name = self.__cursor.var(cx_Oracle.STRING)
@@ -57,6 +58,11 @@ class UserPackage:
         self.__cursor.callproc('user_package.update_user_info', [status, login, first_name, last_name, birthday, sex, doctor])
         return status.getvalue()
 
+    def update_user_submit(self, login, submit):
+        status = self.__cursor.var(cx_Oracle.STRING)
+        self.__cursor.callproc('user_package.update_user_submit', [status, login, submit])
+        return status.getvalue()
+
     def del_user(self, login):
         self.__cursor.callproc('user_package.del_user', [login])
 
@@ -69,6 +75,11 @@ class UserPackage:
         sql = "SELECT doctor from user_info where login = '{}'".format(login)
         res = pd.read_sql_query(sql, self.__db)
         return res['DOCTOR'][0]
+
+    def its_submited(self, login):
+        sql = "SELECT submited from user_info where login = '{}'".format(login)
+        res = pd.read_sql_query(sql, self.__db)
+        return res['SUBMITED'][0]
 
     def get_user_info(self, login):
         sql = "SELECT * FROM TABLE(user_package.get_user_info('{}'))".format(login)
@@ -131,3 +142,36 @@ class MdsPackage:
         sql = "SELECT * FROM TABLE(mds_package.get_medication_list('{}'))".format(symptom)
         medication = pd.read_sql_query(sql, self.__db)
         return medication
+
+    def get_medication_list_by_dis(self, dis):
+        sql = "SELECT * FROM TABLE(mds_package.get_medication_list_by_dis('{}'))".format(dis)
+        print(sql)
+        medication = pd.read_sql_query(sql, self.__db)
+        print(medication)
+        return medication
+
+    def get_disease_list(self, symptom):
+        sql = "SELECT * FROM TABLE(mds_package.get_disease_list('{}'))".format(symptom)
+        disease = pd.read_sql_query(sql, self.__db)
+        return disease
+
+class CardPackage:
+
+    def __init__(self):
+        self.__db = cx_Oracle.connect(user_name, password, server)
+        self.__cursor = self.__db.cursor()
+
+    def add_card(self, card_number, user_login):
+        card_number = int(card_number)
+        self.__cursor.callproc('card_package.card_add_card', [card_number, user_login])
+
+    def update_user(self, card_number, user_login):
+        self.__cursor.callproc('card_package.card_update_user_login', [card_number, user_login])
+
+    def delete_card(self, card_number):
+        self.__cursor.callproc('card_package.card_delete', [card_number])
+
+    def get_all_user_card(self, user_login):
+        sql = "SELECT * FROM TABLE(card_package.get_all_user_card('{}'))".format(user_login)
+        res = pd.read_sql_query(sql, self.__db)
+        return res

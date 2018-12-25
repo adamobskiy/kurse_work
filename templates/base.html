@@ -28,11 +28,16 @@
             <li class="nav-item">
                 <a class="nav-link" href="/medication_advice/my_symptoms">Отримати список ліків</a>
             </li>
-
+            {% if user.its_submited(user_login) == '1' %}
             <li class="nav-item">
-                <a class="nav-link" href="#">Спрогнозувати хворобу</a>
+                <a class="nav-link" href="/possible_illnesses/my_symptoms">Спрогнозувати хворобу</a>
             </li>
-            {% if doctor == '1' %}
+            {% else %}
+            <li class="nav-item">
+                <a class="nav-link" href="/subscription">Спрогнозувати хворобу</a>
+            </li>
+            {% endif %}
+            {% if user.its_doctor(user_login) == '1' %}
                 <li class="nav-item">
                     <a class="nav-link" href="#">Симптоми</a>
                 </li>
@@ -41,6 +46,9 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Хвороби</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Статистика</a>
                 </li>
             {% endif %}
         </ul>
