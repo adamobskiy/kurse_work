@@ -93,8 +93,10 @@ class SymptomPackage:
         self.__db = cx_Oracle.connect(user_name, password, server)
         self.__cursor = self.__db.cursor()
 
-    def add_symptom(self, sym_name, sym_desc):
-        self.__cursor.callproc('symptom_package.add_symptom', [sym_name, sym_desc])
+    def add(self, sym_name, sym_desc):
+        status = self.__cursor.var(cx_Oracle.STRING)
+        self.__cursor.callproc('symptom_package.add_symptom', [status, sym_name, sym_desc])
+        return status.getvalue()
 
     def update_symptom(self, sym_name, sym_desc):
         self.__cursor.callproc('symptom_package.update_symptom', [sym_name, sym_desc])
@@ -154,6 +156,52 @@ class MdsPackage:
         sql = "SELECT * FROM TABLE(mds_package.get_disease_list('{}'))".format(symptom)
         disease = pd.read_sql_query(sql, self.__db)
         return disease
+
+
+class DiseasePackage:
+
+    def __init__(self):
+        self.__db = cx_Oracle.connect(user_name, password, server)
+        self.__cursor = self.__db.cursor()
+
+    def add(self, dis_name, dis_desc):
+        status = self.__cursor.var(cx_Oracle.STRING)
+        self.__cursor.callproc('DESEASE_PACKAGE.add_desease', [status, dis_name, dis_desc])
+        return status.getvalue()
+
+    def update_disease(self, dis_name, dis_desc):
+        self.__cursor.callproc('desease_package.update_desease', [dis_name, dis_desc])
+
+    def del_disease(self, dis_name):
+        self.__cursor.callproc('desease_package.del_desease', [dis_name])
+
+    def get_disease(self, dis_name):
+        sql = "SELECT * FROM TABLE(desease_package.get_desease('{}'))".format(dis_name)
+        res = pd.read_sql_query(sql, self.__db)
+        return res
+
+
+class MedicinePackage:
+
+    def __init__(self):
+        self.__db = cx_Oracle.connect(user_name, password, server)
+        self.__cursor = self.__db.cursor()
+
+    def add(self, med_name, med_desc):
+        status = self.__cursor.var(cx_Oracle.STRING)
+        self.__cursor.callproc('medicine_package.add_medicine', [status, med_name, med_desc])
+        return status.getvalue()
+
+    def update_medicine(self, med_name, med_desc):
+        self.__cursor.callproc('medicine_package.update_medicine', [med_name, med_desc])
+
+    def del_medicine(self, med_name):
+        self.__cursor.callproc('medicine_package.del_medicine', [med_name])
+
+    def get_medicine(self, med_name):
+        sql = "SELECT * FROM TABLE(medicine_package.get_medicine('{}'))".format(med_name)
+        res = pd.read_sql_query(sql, self.__db)
+        return res
 
 class CardPackage:
 

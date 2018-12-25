@@ -3,13 +3,33 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 from flask import Flask, render_template, request, session, redirect, url_for, make_response
+import cx_Oracle
 
 from forms.user import LoginForm, RegistrationForm, UpdateUserForm
 from forms.symptom import SelectSymptomForm
 from forms.card import SelectCardForm
 from forms.disease import SelectDiseaseForm
-from db import UserPackage, SymptomPackage, MdsPackage, CardPackage
+from forms.action import AddForm
+from db import UserPackage, SymptomPackage, MdsPackage, CardPackage, DiseasePackage, MedicinePackage
 
+
+user_name = 'my_name'
+password = 'my_name'
+server = 'xe'
+
+table_map = {
+    'desease': 'Хвороби',
+    'medicine': 'Ліки',
+    'symptom': 'Симптоми',
+    'mds': 'ЛікиХворобиСимптоми'
+}
+
+package_map = {
+    'desease': DiseasePackage(),
+    'medicine': MedicinePackage(),
+    'symptom': SymptomPackage(),
+    'mds': MdsPackage()
+}
 
 app = Flask(__name__)
 app.secret_key = 'My_key'
@@ -186,22 +206,55 @@ def individual(dis_name):
     medication = mds.get_medication_list_by_dis(dis_name).TYPE_MDS_MED_NAME
     return render_template('individual.html', user_login=user_login, user=user, medication=medication)
 
-@app.route('/select/<table_name>')
-def select(table_name):
-    return table_name.capitalize()
+
+@app.route('/table/<table_name>')
+def table_action(table_name):
+    user_login = session.get('login') or request.cookies.get('login')
+    user = UserPackage()
+    connect = cx_Oracle.connect(user_name, password, server)
+    sql = "SELECT * from {}".format(table_name)
+    table = pd.read_sql_query(sql, connect)
+    return render_template('table_action.html',
+                           user_login=user_login,
+                           user=user,
+                           table_name=table_name,
+                           table_nameuk=table_map[table_name],
+                           table=table.to_html(classes='table table-striped'))
 
 
-@app.route('/add/<table_name>')
+@app.route('/table/add/<table_name>', methods=['GET', 'POST'])
 def add(table_name):
-    return table_name.capitalize()
+    user_login = session.get('login') or request.cookies.get('login')
+    user = UserPackage()
+    form = AddForm()
+    problem = None
+    if request.method == 'POST':
+        if not form.validate():
+            pass
+        else:
+            package = package_map[table_name]
+            status = package.add(request.form['name'], request.form['desc'])
+            print(status)
+            if status == 'ok':
+                return redirect(url_for('table_action', table_name=table_name))
+            else:
+                problem = 'Така назва уже існує'
+                problem = problem if status == problem else 'Поля можуть містити лиш букви, числа та симовол "_"'
+    return render_template('add_to_table.html',
+                           user_login=user_login,
+                           user=user,
+                           table_name=table_name,
+                           table_nameuk=table_map[table_name],
+                           form=form,
+                           problem=problem)
 
 
-@app.route('/update/<table_name>')
+@app.route('/table/update/<table_name>')
 def update(table_name):
     return table_name.capitalize()
 
 
-@app.route('/delete/<table_name>')
+@app.route('/table/delete/<table_name>')
 def delete(table_name):
     return table_name.capitalize()
 

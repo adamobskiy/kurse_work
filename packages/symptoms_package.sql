@@ -13,6 +13,7 @@ CREATE OR REPLACE PACKAGE symptom_package IS
         TABLE OF symptom_row;
 
     PROCEDURE add_symptom (
+        status out varchar2,
         symname   IN        symptom.sym_name%TYPE,
         symdesc   IN        symptom.sym_desc%TYPE
     );
@@ -44,6 +45,7 @@ END symptom_package;
 CREATE OR REPLACE PACKAGE BODY symptom_package IS
 
     PROCEDURE add_symptom (
+        status out varchar2,
         symname   IN        symptom.sym_name%TYPE,
         symdesc   IN        symptom.sym_desc%TYPE
     ) IS
@@ -57,8 +59,19 @@ CREATE OR REPLACE PACKAGE BODY symptom_package IS
             symdesc
         );
 
-        COMMIT;
+    COMMIT;
+    status := 'ok';
+    EXCEPTION
+    WHEN DUP_VAL_ON_INDEX
+    THEN
+      status := 'Така назва уже існує';
+    WHEN OTHERS
+    THEN
+      status := SQLERRM;
     END add_symptom;
+
+
+
 
     PROCEDURE del_symptom (
         symname   IN        symptom.sym_name%TYPE
