@@ -76,5 +76,28 @@ class UserPackage:
         return res
 
 
+class SymptomPackage:
 
+    def __init__(self):
+        self.__db = cx_Oracle.connect(user_name, password, server)
+        self.__cursor = self.__db.cursor()
+
+    def add_symptom(self, sym_name, sym_desc):
+        self.__cursor.callproc('symptom_package.add_symptom', [sym_name, sym_desc])
+
+    def update_symptom(self, sym_name, sym_desc):
+        self.__cursor.callproc('symptom_package.update_symptom', [sym_name, sym_desc])
+
+    def del_symptom(self, sym_name):
+        self.__cursor.callproc('symptom_package.del_symptom', [sym_name])
+
+    def get_symptom(self, sym_name):
+        sql = "SELECT * FROM TABLE(symptom_package.get_symptom('{}'))".format(sym_name)
+        res = pd.read_sql_query(sql, self.__db)
+        return res
+
+    def get_number_symptoms(self, limit=25):
+        sql =  "SELECT * FROM TABLE(symptom_package.get_symptoms({}))".format(limit)
+        res = pd.read_sql_query(sql, self.__db)
+        return res
 

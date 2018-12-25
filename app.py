@@ -2,12 +2,14 @@ from datetime import datetime, timedelta
 
 from flask import Flask, render_template, request, session, redirect, url_for, make_response
 
-from forms import LoginForm, RegistrationForm, UpdateUserForm
-from db import UserPackage
+from forms.user import LoginForm, RegistrationForm, UpdateUserForm
+from forms.symptom import SelectSymptomForm
+from db import UserPackage, SymptomPackage
+
 
 app = Flask(__name__)
 app.secret_key = 'My_key'
-
+app.jinja_env.globals.update(zip=zip, type=type)
 
 @app.route('/')
 def index():
@@ -113,9 +115,16 @@ def my_page():
     return render_template('my_page.html', table=table, form=form, doctor=user.its_doctor(user_login))
 
 
-@app.route('/my_symptoms')
-def my_symptoms():
-    return 'My symptoms'
+@app.route('/<next_page>/my_symptoms', methods=['GET', 'POST'])
+def my_symptoms(next_page):
+    symptom = SymptomPackage()
+    table = symptom.get_number_symptoms()
+    form = SelectSymptomForm().get_dynamic(table.SYMANME)
+    if request.method == 'GET':
+        return render_template('my_symptoms.html',  form=form, next_page=next_page)
+    if request.method == 'POST':
+        symptoms = list(filter(lambda x: x not in ('csrf_token', 'submit'), request.form))
+        return redirect(url_for(next_page, symptoms=symptoms))
 
 
 @app.route('/subscription')

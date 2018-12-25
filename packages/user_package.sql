@@ -232,13 +232,7 @@ CREATE OR REPLACE PACKAGE BODY user_package IS
 
   FUNCTION
     get_user_info(
-    loginuser
-      IN
-      user_info
-        .
-        login
-        %
-        TYPE
+    loginuser IN user_info.login%TYPE
   )
     RETURN
       tblgetuserinfo
@@ -261,18 +255,8 @@ CREATE OR REPLACE PACKAGE BODY user_package IS
   END get_user_info;
 
   FUNCTION
-    login_user(loginuser
-                 user_info
-                   .
-                   login
-                   %
-                   TYPE,
-               passworduser
-                 user_info
-                   .
-                   password_
-                   %
-                   TYPE)
+    login_user(loginuser user_info.login%TYPE,
+               passworduser user_info.password_%TYPE)
     RETURN
       NUMBER
   IS
