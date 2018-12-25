@@ -10,6 +10,7 @@ CREATE OR REPLACE PACKAGE desease_package IS
 
 
   PROCEDURE del_desease(
+    status out varchar2,
     disname IN desease.dis_name%TYPE
   );
 
@@ -49,16 +50,9 @@ CREATE OR REPLACE PACKAGE BODY desease_package IS
       status := SQLERRM;
   END add_desease;
 
-
-  PROCEDURE
-    del_desease(
-    disname
-      IN
-      desease
-        .
-        dis_name
-        %
-        TYPE
+  PROCEDURE del_desease(
+    status out varchar2,
+    disname IN desease.dis_name%TYPE
   )
   IS
     PRAGMA
@@ -69,11 +63,12 @@ CREATE OR REPLACE PACKAGE BODY desease_package IS
     WHERE desease.dis_name = disname;
 
     COMMIT;
+    status := 'ok';
     EXCEPTION
     WHEN OTHERS
     THEN
       ROLLBACK;
-      RAISE value_error;
+      status := SQLERRM;
   END del_desease;
 
   PROCEDURE update_desease(status out varchar2,

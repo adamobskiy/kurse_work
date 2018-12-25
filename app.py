@@ -9,7 +9,7 @@ from forms.user import LoginForm, RegistrationForm, UpdateUserForm
 from forms.symptom import SelectSymptomForm
 from forms.card import SelectCardForm
 from forms.disease import SelectDiseaseForm
-from forms.action import AddForm, UpdateForm
+from forms.action import AddForm, UpdateForm, DeleteForm
 from db import UserPackage, SymptomPackage, MdsPackage, CardPackage, DiseasePackage, MedicinePackage
 
 
@@ -277,9 +277,32 @@ def update(table_name):
                            problem=problem)
 
 
-@app.route('/table/delete/<table_name>')
+@app.route('/table/delete/<table_name>', methods=['GET', 'POST'])
 def delete(table_name):
-    return table_name.capitalize()
+    user_login = session.get('login') or request.cookies.get('login')
+    user = UserPackage()
+    package = package_map[table_name]
+    names = package.get_all_names().iloc[:, 0].values
+    form = DeleteForm().get_form(names)
+    problem = None
+    if request.method == 'POST':
+        if not form.validate():
+            pass
+        else:
+            print(request.form['name'])
+            status = package.delete(request.form['name'])
+            print(status)
+            if status == 'ok':
+                return redirect(url_for('table_action', table_name=table_name))
+            else:
+                problem = 'Оберіть назву з випадаючого списка'
+    return render_template('delete_table.html',
+                           user_login=user_login,
+                           user=user,
+                           table_name=table_name,
+                           table_nameuk=table_map[table_name],
+                           form=form,
+                           problem=problem)
 
 
 if __name__ == '__main__':

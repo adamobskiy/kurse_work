@@ -20,6 +20,7 @@ CREATE OR REPLACE PACKAGE symptom_package IS
 
 
     PROCEDURE del_symptom (
+        status out varchar2,
         symname   IN        symptom.sym_name%TYPE
     );
 
@@ -75,6 +76,7 @@ CREATE OR REPLACE PACKAGE BODY symptom_package IS
 
 
     PROCEDURE del_symptom (
+        status out varchar2,
         symname   IN        symptom.sym_name%TYPE
     ) IS
         PRAGMA autonomous_transaction;
@@ -84,10 +86,12 @@ CREATE OR REPLACE PACKAGE BODY symptom_package IS
             symptom.sym_name = symname;
 
         COMMIT;
+    status := 'ok';
     EXCEPTION
-        WHEN OTHERS THEN
-            ROLLBACK;
-            RAISE value_error;
+    WHEN OTHERS
+    THEN
+      ROLLBACK;
+      status := SQLERRM;
     END del_symptom;
 
     PROCEDURE update_symptom (

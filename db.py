@@ -103,8 +103,10 @@ class SymptomPackage:
         self.__cursor.callproc('symptom_package.update_symptom', [status, sym_name, sym_desc])
         return status.getvalue()
 
-    def del_symptom(self, sym_name):
-        self.__cursor.callproc('symptom_package.del_symptom', [sym_name])
+    def delete(self, sym_name):
+        status = self.__cursor.var(cx_Oracle.STRING)
+        self.__cursor.callproc('symptom_package.del_symptom', [status, sym_name])
+        return status.getvalue()
 
     def get_symptom(self, sym_name):
         sql = "SELECT * FROM TABLE(symptom_package.get_symptom('{}'))".format(sym_name)
@@ -182,8 +184,10 @@ class DiseasePackage:
         self.__cursor.callproc('desease_package.update_desease', [status, dis_name, dis_desc])
         return status.getvalue()
 
-    def del_disease(self, dis_name):
-        self.__cursor.callproc('desease_package.del_desease', [dis_name])
+    def delete(self, dis_name):
+        status = self.__cursor.var(cx_Oracle.STRING)
+        self.__cursor.callproc('desease_package.del_desease', [status, dis_name])
+        return status.getvalue()
 
     def get_disease(self, dis_name):
         sql = "SELECT * FROM TABLE(desease_package.get_desease('{}'))".format(dis_name)
@@ -211,8 +215,10 @@ class MedicinePackage:
         self.__cursor.callproc('medicine_package.update_medicine', [status, med_name, med_desc])
         return status.getvalue()
 
-    def del_medicine(self, med_name):
-        self.__cursor.callproc('medicine_package.del_medicine', [med_name])
+    def delete(self, med_name):
+        status = self.__cursor.var(cx_Oracle.STRING)
+        self.__cursor.callproc('medicine_package.del_medicine', [status, med_name])
+        return status.getvalue()
 
     def get_medicine(self, med_name):
         sql = "SELECT * FROM TABLE(medicine_package.get_medicine('{}'))".format(med_name)

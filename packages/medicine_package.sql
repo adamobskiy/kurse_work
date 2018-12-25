@@ -9,6 +9,7 @@ CREATE OR REPLACE PACKAGE medicine_package IS
                          meddesc IN medicine.med_desc%TYPE);
 
   PROCEDURE del_medicine(
+    status out varchar2,
     medname IN medicine.med_name%TYPE
   );
 
@@ -50,6 +51,7 @@ CREATE OR REPLACE PACKAGE BODY medicine_package IS
 
 
   PROCEDURE del_medicine(
+    status out varchar2,
     medname IN medicine.med_name%TYPE
   ) IS
     PRAGMA autonomous_transaction;
@@ -59,11 +61,12 @@ CREATE OR REPLACE PACKAGE BODY medicine_package IS
     WHERE medicine.med_name = medname;
 
     COMMIT;
+    status := 'ok';
     EXCEPTION
     WHEN OTHERS
     THEN
       ROLLBACK;
-      RAISE value_error;
+      status := SQLERRM;
   END del_medicine;
 
   PROCEDURE update_medicine(status out varchar2,
