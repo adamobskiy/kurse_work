@@ -271,8 +271,6 @@ CREATE OR REPLACE PACKAGE BODY user_package IS
     return (res);
   END login_user;
 
-END
-  user_package;
-
-
+END user_package;
+/
 

@@ -1,15 +1,17 @@
 from datetime import datetime, timedelta
 
+import numpy as np
+import pandas as pd
 from flask import Flask, render_template, request, session, redirect, url_for, make_response
 
 from forms.user import LoginForm, RegistrationForm, UpdateUserForm
 from forms.symptom import SelectSymptomForm
-from db import UserPackage, SymptomPackage
+from db import UserPackage, SymptomPackage, MdsPackage
 
 
 app = Flask(__name__)
 app.secret_key = 'My_key'
-app.jinja_env.globals.update(zip=zip, type=type)
+app.jinja_env.globals.update(zip=zip, type=type, list=list)
 
 @app.route('/')
 def index():
@@ -120,21 +122,26 @@ def my_symptoms(next_page):
     symptom = SymptomPackage()
     table = symptom.get_number_symptoms()
     form = SelectSymptomForm().get_dynamic(table.SYMANME)
-    if request.method == 'GET':
-        return render_template('my_symptoms.html',  form=form, next_page=next_page)
-    if request.method == 'POST':
-        symptoms = list(filter(lambda x: x not in ('csrf_token', 'submit'), request.form))
-        return redirect(url_for(next_page, symptoms=symptoms))
+    return render_template('my_symptoms.html',  form=form, next_page=next_page)
+
+
+@app.route('/medication_advice', methods=['GET', 'POST'])
+def medication_advice():
+    symptoms = list(filter(lambda x: x not in ('csrf_token', 'submit'), request.form))
+    mds = MdsPackage()
+    medication = []
+    symptom_map = []
+    for symptom in symptoms:
+        med_fom_sym = list(mds.get_medication_list(symptom).TYPE_MDS_MED_NAME)
+        medication += med_fom_sym
+        symptom_map += [symptom for i in range(len(med_fom_sym))]
+    med_res = pd.DataFrame({'symptom': symptom_map, 'medication': medication})
+    return render_template('medication_advice.html', med_res=med_res)
 
 
 @app.route('/subscription')
 def subscription():
     return 'Subscription'
-
-
-@app.route('/medication_advice')
-def medication_advice():
-    return 'Medication advice'
 
 
 @app.route('/possible_illnesses')
@@ -163,4 +170,4 @@ def delete(table_name):
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

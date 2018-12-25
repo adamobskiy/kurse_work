@@ -101,3 +101,33 @@ class SymptomPackage:
         res = pd.read_sql_query(sql, self.__db)
         return res
 
+
+class MdsPackage:
+    def __init__(self):
+        self.__db = cx_Oracle.connect(user_name, password, server)
+        self.__cursor = self.__db.cursor()
+
+    def add_mds(self, mds_date, mds_dis=None, mds_sym=None, mds_med=None):
+        self.__cursor.callproc('mds_package.add_mds', [mds_date, mds_dis, mds_sym, mds_med])
+
+    def update_mds_dis(self, mds_date, mds_dis):
+        self.__cursor.callproc('mds_package.update_mdsdesease', [mds_date, mds_dis])
+
+    def update_mds_med(self, mds_date, mds_med):
+        self.__cursor.callproc('mds_package.update_mdsmedicine', [mds_date, mds_med])
+
+    def update_mds_sym(self, mds_date, mds_sym):
+        self.__cursor.callproc('mds_package.update_mdssymptom', [mds_date, mds_sym])
+
+    def del_mds(self, mds_date):
+        self.__cursor.callproc('mds_package.del_mds', [mds_date])
+
+    def get_all_user_mds(self, mds_date):
+        sql = "SELECT * FROM TABLE(mds_package.get_mds('{}'))".format(mds_date)
+        res = pd.read_sql_query(sql, self.__db)
+        return res
+
+    def get_medication_list(self, symptom):
+        sql = "SELECT * FROM TABLE(mds_package.get_medication_list('{}'))".format(symptom)
+        medication = pd.read_sql_query(sql, self.__db)
+        return medication
