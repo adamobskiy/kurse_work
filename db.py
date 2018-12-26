@@ -269,9 +269,14 @@ class CardPackage:
         self.__db = cx_Oracle.connect(user_name, password, server)
         self.__cursor = self.__db.cursor()
 
-    def add_card(self, card_number, user_login):
-        card_number = int(card_number)
-        self.__cursor.callproc('card_package.card_add_card', [card_number, user_login])
+    def add(self, card_number, user_login):
+        status = self.__cursor.var(cx_Oracle.STRING)
+        try:
+            card_number = int(card_number)
+        except ValueError:
+            card_number = -1
+        self.__cursor.callproc('card_package.card_add_card', [status, card_number, user_login])
+        return status.getvalue()
 
     def update_user(self, card_number, user_login):
         self.__cursor.callproc('card_package.card_update_user_login', [card_number, user_login])

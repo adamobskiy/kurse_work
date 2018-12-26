@@ -11,7 +11,7 @@ import cx_Oracle
 
 from forms.user import LoginForm, RegistrationForm, UpdateUserForm
 from forms.symptom import SelectSymptomForm
-from forms.card import SelectCardForm
+from forms.card import SelectCardForm, AddCard
 from forms.disease import SelectDiseaseForm
 from forms.action import AddForm, UpdateForm, DeleteForm
 from forms.mds import AddMdsForm
@@ -353,6 +353,32 @@ def add_mds(conection_type):
 # def delete_mds(conection_type):
 #     return conection_type
 
+@app.route('/add_card', methods=['GET', 'POST'])
+def add_card():
+    user_login = session.get('login') or request.cookies.get('login')
+    user = UserPackage()
+    package = CardPackage()
+    form = AddCard()
+    problem = None
+    if request.method == 'POST':
+        if not form.validate():
+            pass
+        else:
+            status = package.add(request.form['number'],
+                                 user_login)
+            print(status)
+            if status == 'ok':
+                return redirect('subscription')
+            else:
+                problem = 'Така назва уже існує'
+                problem = problem if status == problem else 'Поле може містити числа '
+    return render_template('add_card.html',
+                           user_login=user_login,
+                           user=user,
+                           form=form,
+                           problem=problem)
+
+
 
 @app.route('/statistics', methods=['GET', 'POST'])
 def statistics():
@@ -387,7 +413,6 @@ def statistics():
 
 
     return render_template('statistics.html', user_login=user_login, user=user, graphJSON=graphJSON, ids=ids)
-
 
 @app.route('/show_mds')
 def show_mds():
