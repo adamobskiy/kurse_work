@@ -22,17 +22,17 @@ password = 'my_name'
 server = 'xe'
 
 table_map = {
-    'desease': 'Хвороби',
-    'medicine': 'Ліки',
-    'symptom': 'Симптоми',
-    'mds': 'ЛікиХворобиСимптоми'
+    'disease_view': 'Хвороби',
+    'medicine_view': 'Ліки',
+    'symptom_view': 'Симптоми',
+    'mds_view': 'ЛікиХворобиСимптоми'
 }
 
 package_map = {
-    'desease': DiseasePackage(),
-    'medicine': MedicinePackage(),
-    'symptom': SymptomPackage(),
-    'mds': MdsPackage()
+    'disease_view': DiseasePackage(),
+    'medicine_view': MedicinePackage(),
+    'symptom_view': SymptomPackage(),
+    'mds_view': MdsPackage()
 }
 
 app = Flask(__name__)
@@ -315,13 +315,13 @@ def statistics():
     user = UserPackage()
 
     connect = cx_Oracle.connect(user_name, password, server)
-    sql = "SELECT * from {}".format('DESEASE')
+    sql = "SELECT * from {}".format('DISEASE_VIEW')
     disease = pd.read_sql_query(sql, connect)
 
-    sql = "SELECT * from {}".format('MEDICINE')
+    sql = "SELECT * from {}".format('MEDICINE_VIEW')
     medicine = pd.read_sql_query(sql, connect)
 
-    sql = "SELECT * from {}".format('SYMPTOM')
+    sql = "SELECT * from {}".format('SYMPTOM_VIEW')
     symptom = pd.read_sql_query(sql, connect)
 
     hist_1 = go.Histogram(

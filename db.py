@@ -7,6 +7,7 @@ password = 'my_name'
 server = 'xe'
 
 
+
 class UserPackage:
     def __init__(self):
         self.__db = cx_Oracle.connect(user_name, password, server)
@@ -119,7 +120,7 @@ class SymptomPackage:
         return res
 
     def get_all_names(self):
-        sql = "SELECT SYM_NAME FROM SYMPTOM"
+        sql = "SELECT SYM_NAME FROM SYMPTOM_VIEW"
         res = pd.read_sql_query(sql, self.__db)
         return res
 
@@ -195,7 +196,7 @@ class DiseasePackage:
         return res
 
     def get_all_names(self):
-        sql = "SELECT DIS_NAME FROM DESEASE"
+        sql = "SELECT DIS_NAME FROM DISEASE_VIEW"
         res = pd.read_sql_query(sql, self.__db)
         return res
 
@@ -226,7 +227,7 @@ class MedicinePackage:
         return res
 
     def get_all_names(self):
-        sql = "SELECT MED_NAME FROM MEDICINE"
+        sql = "SELECT MED_NAME FROM MEDICINE_VIEW"
         res = pd.read_sql_query(sql, self.__db)
         return res
 
