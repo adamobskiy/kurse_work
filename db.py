@@ -146,7 +146,7 @@ class MdsPackage:
             mds_med = name1
         else:
             mds_sym = name1
-        if table_name1 == 'disease':
+        if table_name2 == 'disease':
             mds_dis = name2
         else:
             mds_sym = name2

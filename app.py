@@ -315,9 +315,13 @@ def delete(table_name):
 def mds_view_table():
     user_login = session.get('login') or request.cookies.get('login')
     user = UserPackage()
+    sql = 'SELECT * FROM MDS_VIEW'
+    connect = cx_Oracle.connect(user_name, password, server)
+    table = pd.read_sql_query(sql, connect).to_html(classes='table table-striped')
     return render_template('mds_view.html',
                            user_login=user_login,
-                           user=user)
+                           user=user,
+                           table=table)
 
 
 @app.route('/mds_view/add/<conection_type>', methods=['GET', 'POST'])
@@ -407,18 +411,9 @@ def statistics():
 
     data = [hist_1, hist_2, hist_3]
     ids = [1, 2, 3]
-
-
     graphJSON = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
-
-
     return render_template('statistics.html', user_login=user_login, user=user, graphJSON=graphJSON, ids=ids)
 
-@app.route('/show_mds')
-def show_mds():
-    sql = 'SELECT * FROM MDS_VIEW'
-    connect = cx_Oracle.connect(user_name, password, server)
-    return pd.read_sql_query(sql, connect).to_html()
 
 
 if __name__ == '__main__':

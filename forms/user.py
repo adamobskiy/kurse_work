@@ -5,6 +5,7 @@ from wtforms import (StringField,
                      RadioField,
                      SubmitField,
                      BooleanField,
+                     SelectField,
                      validators)
 
 
@@ -56,16 +57,16 @@ class UpdateUserForm(FlaskForm):
     birth_day = DateField('Дата народження (рік-місяць-день):', format='%Y-%m-%d', validators=[
         validators.DataRequired('Введіть Вашу Дату народження у форматі (рік-місяць-день):')
     ])
-    sex = RadioField('Стать:', choices=[
+    sex = SelectField('Стать:', choices=[
         ('1', 'Чоловік'),
         ('0', 'Жінка')
-    ], default='0')
-    doctor = RadioField('Оберіть вашу роль:', choices=[
+    ])
+    doctor = SelectField('Оберіть вашу роль:', choices=[
         ('1', 'Доктор'),
         ('0', 'Пацієнт')
-    ], default='0')
-    subscript = RadioField('Оберіть чи ви підписані:', choices=[
+    ])
+    subscript = SelectField('Оберіть чи ви підписані:', choices=[
         ('1', 'Так'),
         ('0', 'Ні')
-    ], default='0')
+    ])
     submit = SubmitField('Оновити')

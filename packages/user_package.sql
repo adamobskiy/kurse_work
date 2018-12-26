@@ -5,7 +5,8 @@ create or replace PACKAGE user_package IS
     lastname user_info.last_name%TYPE,
     birthdayuser user_info.birthday%TYPE,
     sexuser user_info.sex%TYPE,
-    doctoruser user_info.doctor%TYPE
+    doctoruser user_info.doctor%TYPE,
+    submiteduser user_info.submited%type
     );
   TYPE tblgetuserinfo IS
     TABLE OF user_info_row;
@@ -272,7 +273,8 @@ CREATE OR REPLACE PACKAGE BODY user_package IS
                       last_name,
                       birthday,
                       sex,
-                      doctor
+                      doctor,
+                      SUBMITED
       FROM user_info
       WHERE user_info.login = loginuser
       )
