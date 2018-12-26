@@ -14,6 +14,7 @@ from forms.symptom import SelectSymptomForm
 from forms.card import SelectCardForm
 from forms.disease import SelectDiseaseForm
 from forms.action import AddForm, UpdateForm, DeleteForm
+from forms.mds import AddMdsForm
 from db import UserPackage, SymptomPackage, MdsPackage, CardPackage, DiseasePackage, MedicinePackage
 
 
@@ -132,7 +133,8 @@ def my_page():
             request.form['last_name'],
             datetime.strptime(request.form['birth_day'] + ' 00:00:00', '%Y-%m-%d %H:%M:%S'),
             request.form['sex'],
-            request.form['doctor']
+            request.form['doctor'],
+            request.form['subscript']
         )
         if status == 'ok':
             table = user.get_user_info(user_login)
@@ -309,6 +311,49 @@ def delete(table_name):
                            problem=problem)
 
 
+@app.route('/mds_view')
+def mds_view_table():
+    user_login = session.get('login') or request.cookies.get('login')
+    user = UserPackage()
+    return render_template('mds_view.html',
+                           user_login=user_login,
+                           user=user)
+
+
+@app.route('/mds_view/add/<conection_type>', methods=['GET', 'POST'])
+def add_mds(conection_type):
+    user_login = session.get('login') or request.cookies.get('login')
+    user = UserPackage()
+    table_name1, table_name2 = conection_type.split('_')
+    package = MdsPackage()
+    names1, names2 = package.get_names(table_name1, table_name2)
+    print(names1, names2)
+    problem = None
+    form = AddMdsForm().get_form(names1, names2)
+    if request.method == 'POST':
+        if not form.validate():
+            pass
+        else:
+            status = package.add(request.form['name1'],
+                                 request.form['name2'], table_name1, table_name2)
+            print(status)
+            if status == 'ok':
+                return redirect('mds_view')
+            else:
+                problem = 'З випадаючих списків необхідно обрати відповідні атрибути'
+    return render_template('add_mds.html',
+                           user_login=user_login,
+                           user=user,
+                           form=form,
+                           problem=problem,
+                           conection_type=conection_type)
+
+
+# @app.route('/mds_view/delete/<conection_type>')
+# def delete_mds(conection_type):
+#     return conection_type
+
+
 @app.route('/statistics', methods=['GET', 'POST'])
 def statistics():
     user_login = session.get('login') or request.cookies.get('login')
@@ -342,6 +387,13 @@ def statistics():
 
 
     return render_template('statistics.html', user_login=user_login, user=user, graphJSON=graphJSON, ids=ids)
+
+
+@app.route('/show_mds')
+def show_mds():
+    sql = 'SELECT * FROM MDS_VIEW'
+    connect = cx_Oracle.connect(user_name, password, server)
+    return pd.read_sql_query(sql, connect).to_html()
 
 
 if __name__ == '__main__':

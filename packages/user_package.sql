@@ -54,7 +54,8 @@ create or replace PACKAGE user_package IS
                              lastname IN user_info.last_name%TYPE,
                              birthdayuser IN user_info.birthday%TYPE,
                              sexuser IN user_info.sex%TYPE,
-                             doctoruser IN user_info.sex%TYPE);
+                             doctoruser IN user_info.sex%TYPE,
+                             submituser IN user_info.submited%TYPE);
 
 
   FUNCTION get_user_info(
@@ -236,7 +237,8 @@ CREATE OR REPLACE PACKAGE BODY user_package IS
                              lastname IN user_info.last_name%TYPE,
                              birthdayuser IN user_info.birthday%TYPE,
                              sexuser IN user_info.sex%TYPE,
-                             doctoruser IN user_info.sex%TYPE) IS
+                             doctoruser IN user_info.sex%TYPE,
+                             submituser IN user_info.submited%TYPE) IS
     PRAGMA autonomous_transaction;
   BEGIN
     UPDATE user_info
@@ -244,7 +246,8 @@ CREATE OR REPLACE PACKAGE BODY user_package IS
         USER_INFO.LAST_NAME  = lastname,
         user_info.BIRTHDAY   = birthdayuser,
         USER_INFO.SEX        = sexuser,
-        USER_INFO.DOCTOR     = doctoruser
+        USER_INFO.DOCTOR     = doctoruser,
+        USER_INFO.SUBMITED = submituser
     WHERE user_info.login = loginuser;
     COMMIT;
     status := 'ok';

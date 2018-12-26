@@ -54,9 +54,16 @@ class UserPackage:
                 status_sex.getvalue(),
                 status_doctor.getvalue())
 
-    def update_user_info(self, login, first_name, last_name, birthday, sex, doctor):
+    def update_user_info(self, login, first_name, last_name, birthday, sex, doctor, submit):
         status = self.__cursor.var(cx_Oracle.STRING)
-        self.__cursor.callproc('user_package.update_user_info', [status, login, first_name, last_name, birthday, sex, doctor])
+        self.__cursor.callproc('user_package.update_user_info', [status,
+                                                                 login,
+                                                                 first_name,
+                                                                 last_name,
+                                                                 birthday,
+                                                                 sex,
+                                                                 doctor,
+                                                                 submit])
         return status.getvalue()
 
     def update_user_submit(self, login, submit):
@@ -131,8 +138,21 @@ class MdsPackage:
         self.__db = cx_Oracle.connect(user_name, password, server)
         self.__cursor = self.__db.cursor()
 
-    def add_mds(self, mds_date, mds_dis=None, mds_sym=None, mds_med=None):
-        self.__cursor.callproc('mds_package.add_mds', [mds_date, mds_dis, mds_sym, mds_med])
+    def add(self, name1, name2, table_name1, table_name2):
+        mds_dis = None
+        mds_sym = None
+        mds_med = None
+        if table_name1 == 'medicine':
+            mds_med = name1
+        else:
+            mds_sym = name1
+        if table_name1 == 'disease':
+            mds_dis = name2
+        else:
+            mds_sym = name2
+        status = self.__cursor.var(cx_Oracle.STRING)
+        self.__cursor.callproc('mds_package.add_mds', [status, mds_dis, mds_sym, mds_med])
+        return status.getvalue()
 
     def update_mds_dis(self, mds_date, mds_dis):
         self.__cursor.callproc('mds_package.update_mdsdesease', [mds_date, mds_dis])
@@ -167,6 +187,17 @@ class MdsPackage:
         sql = "SELECT * FROM TABLE(mds_package.get_disease_list('{}'))".format(symptom)
         disease = pd.read_sql_query(sql, self.__db)
         return disease
+
+    def get_names(self, table_name1, table_name2):
+        sql1 = 'SELECT * FROM {}'.format(table_name1 + '_view')
+        sql2 = 'SELECT * FROM {}'.format(table_name2 + '_view')
+        table1 = pd.read_sql_query(sql1, self.__db)
+        table2 = pd.read_sql_query(sql2, self.__db)
+
+        names1 = table1.iloc[:, 0]
+        names2 = table2.iloc[:, 0]
+        return names1, names2
+
 
 
 class DiseasePackage:

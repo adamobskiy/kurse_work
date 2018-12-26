@@ -18,7 +18,8 @@ CREATE OR REPLACE PACKAGE mds_package AS
     TABLE OF mds_des_row;
 
 
-  PROCEDURE add_mds(mdsdate IN mds.mds_date%TYPE,
+  PROCEDURE add_mds(
+                    status    OUT       VARCHAR2,
                     mdsdesease IN mds.desease_dis_name%TYPE,
                     mdssymptom IN mds.symptom_sym_name%TYPE,
                     mdsmedicine IN mds.medicine_med_name%TYPE);
@@ -63,7 +64,8 @@ END mds_package;
 
 CREATE OR REPLACE PACKAGE BODY mds_package IS
 
-  PROCEDURE add_mds(mdsdate IN mds.mds_date%TYPE,
+  PROCEDURE add_mds(
+                    status    OUT       VARCHAR2,
                     mdsdesease IN mds.desease_dis_name%TYPE,
                     mdssymptom IN mds.symptom_sym_name%TYPE,
                     mdsmedicine IN mds.medicine_med_name%TYPE) IS
@@ -73,12 +75,18 @@ CREATE OR REPLACE PACKAGE BODY mds_package IS
                      desease_dis_name,
                      symptom_sym_name,
                      medicine_med_name)
-    VALUES (mdsdate,
+    VALUES (systimestamp,
             mdsdesease,
             mdssymptom,
             mdsmedicine);
 
     COMMIT;
+    status := 'ok';
+    EXCEPTION
+        WHEN dup_val_on_index THEN
+            status := 'Така назва уже існує';
+        WHEN OTHERS THEN
+            status := sqlerrm;
   END add_mds;
 
   PROCEDURE del_mds(

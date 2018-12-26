@@ -59,9 +59,13 @@ class UpdateUserForm(FlaskForm):
     sex = RadioField('Стать:', choices=[
         ('1', 'Чоловік'),
         ('0', 'Жінка')
-    ], default='1')
+    ], default='0')
     doctor = RadioField('Оберіть вашу роль:', choices=[
         ('1', 'Доктор'),
         ('0', 'Пацієнт')
+    ], default='0')
+    subscript = RadioField('Оберіть чи ви підписані:', choices=[
+        ('1', 'Так'),
+        ('0', 'Ні')
     ], default='0')
     submit = SubmitField('Оновити')
